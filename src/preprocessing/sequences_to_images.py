@@ -41,21 +41,24 @@ class Matched:
         centroids = image_data[["c2_XM", "c2_YM"]]
         return centroids
 
+
+# apply above
 samples = Matched(image_path, sequence_path)
 centroids = samples.get_centroids_of_matched()
-centroids.to_csv("roi.csv", index=False)
+# number of cells you would like
+centroids.iloc[:10,:].to_csv("roi_with_index.csv")
 
-# viewer = napari.Viewer()
-# viewer.open(tif_path)
-# napari.run()
+#cropping is done in imagej
+#requires index to be present
+#roi_csv_with_index
+# plugins -> new -> macro
+# run points_to_roi_with_names.ijm
+# run crop_image_with_names.ijm
+# 50x50 seems to work well 
 
-# def load_tif(tif_path):
-#     im = Image.open(tif_path)
-#     im.show()
 
 
-
-def get_cell_at_roi():
+def get_single_cell_at_roi():
     #otsu threshold cell
     #create bounding box
     #keep only largest cell
