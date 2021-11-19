@@ -46,7 +46,9 @@ class Matched:
 samples = Matched(image_path, sequence_path)
 centroids = samples.get_centroids_of_matched()
 # number of cells you would like
-centroids.iloc[:10,:].to_csv("roi_with_index.csv")
+centroids.iloc[:100,:].to_csv("roi_with_index.csv") #this path is hardcoded in imagej scripts will need to change
+
+## Open imagej ##
 
 #cropping is done in imagej
 #requires index to be present
@@ -56,14 +58,9 @@ centroids.iloc[:10,:].to_csv("roi_with_index.csv")
 # run crop_image_with_names.ijm
 # 50x50 seems to work well 
 
-
+## Will need to do extra formatting to just get each single cell ##
 
 def get_single_cell_at_roi():
-    #otsu threshold cell
-    #create bounding box
-    #keep only largest cell
-    pass
-
-def crop_image_to_single_cell():
-    # https://forum.image.sc/t/saving-each-roi-as-individual-images/3227/13
+    #find cell index falls within
+    #keep only largest cell 
     pass

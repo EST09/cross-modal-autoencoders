@@ -24,7 +24,7 @@ def setup_args():
     options.add_argument('-bs', action="store", dest="batch_size", default = 128, type = int)
     options.add_argument('-ds', action="store", dest="datadir", default = "data/nuclear_crops_all_experiments/")
  
-    options.add_argument('-iter', action="store", dest="max_iter", default = 800, type = int)
+    options.add_argument('-iter', action="store", dest="max_iter", default = 5, type = int) #800
     options.add_argument('-lr', action="store", dest="lr", default=1e-3, type = float)
     options.add_argument('-nz', action="store", dest="nz", default=128, type = int)
     options.add_argument('-lamb', action="store", dest="lamb", default=0.0000001, type = float)
