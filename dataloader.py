@@ -51,6 +51,9 @@ class NucleiDatasetNew(Dataset):
         images_train = []
         images_test = []
 
+        #I think they have already split it up into test/train in the cs file which is why they can split it like this
+        #10% as test 
+        #I WILL NEED TO REWRITE THIS FOR OURS
         for f in os.listdir(os.path.join(self.datadir, "images")):
             basename = os.path.splitext(f)[0]
             fname = os.path.join(os.path.join(self.datadir, "images"), f)
@@ -132,12 +135,12 @@ class RNA_Dataset(Dataset):
 
 
 def print_nuclei_names():
-    dataset = NucleiDatasetNew(datadir="data/nuclear_crops_all_experiments", mode='test')
+    dataset = NucleiDatasetNew(datadir="data_folder/data/nuclear_crops_all_experiments", mode='test')
     for sample in dataset:
         print(sample['name'])
 
 def test_nuclei_dataset():
-    dataset = NucleiDatasetNew(datadir="data/nuclear_crops_all_experiments", mode='train')
+    dataset = NucleiDatasetNew(datadir="data_folder/data/nuclear_crops_all_experiments", mode='train')
     print(len(dataset))
     sample = dataset[0]
     print(sample['image_tensor'].shape)
@@ -149,7 +152,7 @@ def test_nuclei_dataset():
     print(labels)
 
 def test_atac_loader():
-    dataset = ATAC_Dataset(datadir="data/atac_seq_data")
+    dataset = ATAC_Dataset(datadir="data_folder/data/atac_seq_data")
     print(len(dataset))
     sample = dataset[0]
     print(torch.max(sample['tensor']))
@@ -159,7 +162,7 @@ def test_atac_loader():
         print(sample[k])
 
 def test_rna_loader():
-    dataset = RNA_Dataset(datadir="data/nCD4_gene_exp_matrices")
+    dataset = RNA_Dataset(datadir="data_folder/data/nCD4_gene_exp_matrices")
     print(len(dataset))
     sample = dataset[0]
     print(torch.max(sample['tensor']))

@@ -19,12 +19,12 @@ def setup_args():
  
     options = argparse.ArgumentParser()
 
-    options.add_argument('--save-dir', action="store", dest="save_dir")
+    options.add_argument('--save-dir', action="store", dest="save_dir", default="save_dir")
     options.add_argument('-pt', action="store", dest="pretrained_file", default=None)
     options.add_argument('-bs', action="store", dest="batch_size", default = 128, type = int)
-    options.add_argument('-ds', action="store", dest="datadir", default = "data/nuclear_crops_all_experiments/")
+    options.add_argument('-ds', action="store", dest="datadir", default = "data_folder/data/nuclear_crops_all_experiments/")
  
-    options.add_argument('-iter', action="store", dest="max_iter", default = 800, type = int)
+    options.add_argument('-iter', action="store", dest="max_iter", default = 2, type = int) #800
     options.add_argument('-lr', action="store", dest="lr", default=1e-3, type = float)
     options.add_argument('-nz', action="store", dest="nz", default=128, type = int)
     options.add_argument('-lamb', action="store", dest="lamb", default=0.0000001, type = float)
@@ -46,7 +46,9 @@ train_loader = DataLoader(trainset, batch_size=args.batch_size, drop_last=False,
 test_loader = DataLoader(testset, batch_size=args.batch_size, drop_last=False, shuffle=False)
 
 print('Data loaded')
- 
+
+#VAE 
+#clf = classifier
 model = AENet.VAE(latent_variable_size=args.nz, batchnorm=True)
 if args.conditional:
     netCondClf = AENet.Simple_Classifier(nz=args.nz)
@@ -56,6 +58,7 @@ if args.pretrained_file is not None:
     print("Pre-trained model loaded")
     sys.stdout.flush()
 
+#cross_entropy
 CE_weights = torch.FloatTensor([4.5, 0.5])
  
 if torch.cuda.is_available():

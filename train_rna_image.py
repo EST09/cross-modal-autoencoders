@@ -21,16 +21,16 @@ def setup_args():
     options = argparse.ArgumentParser()
 
     # save and directory options
-    options.add_argument('-sd', '--save-dir', action="store", dest="save_dir")
+    options.add_argument('-sd', '--save-dir', action="store", dest="save_dir", default="/Users/esthomas/Andor_Rotation/github_repo/cross-modal-autoencoders/save_dir")
     options.add_argument('--save-freq', action="store", dest="save_freq", default=20, type=int)
-    options.add_argument('--pretrained-file', action="store")
+    options.add_argument('--pretrained-file', action="store", default="/Users/esthomas/Andor_Rotation/github_repo/cross-modal-autoencoders/save_dir/models/0.pth")
 
     # training parameters
     options.add_argument('-bs', '--batch-size', action="store", dest="batch_size", default=32, type=int)
     options.add_argument('-w', '--num-workers', action="store", dest="num_workers", default=10, type=int)
     options.add_argument('-lrAE', '--learning-rate-AE', action="store", dest="learning_rate_AE", default=1e-4, type=float)
     options.add_argument('-lrD', '--learning-rate-D', action="store", dest="learning_rate_D", default=1e-4, type=float)
-    options.add_argument('-e', '--max-epochs', action="store", dest="max_epochs", default=1000, type=int)
+    options.add_argument('-e', '--max-epochs', action="store", dest="max_epochs", default=2, type=int)
     options.add_argument('-wd', '--weight-decay', action="store", dest="weight_decay", default=0, type=float)
     options.add_argument('--train-imagenet', action="store_true")
     options.add_argument('--conditional', action="store_true")
@@ -80,8 +80,8 @@ if args.use_gpu:
         netCondClf.cuda()
 
 # load data
-genomics_dataset = RNA_Dataset(datadir="data/nCD4_gene_exp_matrices/")
-image_dataset = NucleiDataset(datadir="data/nuclear_crops_all_experiments", mode='test')
+genomics_dataset = RNA_Dataset(datadir="data_folder/data/nCD4_gene_exp_matrices/")
+image_dataset = NucleiDataset(datadir="data_folder/data/nuclear_crops_all_experiments", mode='test')
 
 image_loader = torch.utils.data.DataLoader(image_dataset, batch_size=args.batch_size, drop_last=True, shuffle=True)
 genomics_loader = torch.utils.data.DataLoader(genomics_dataset, batch_size=args.batch_size, drop_last=True, shuffle=True)
