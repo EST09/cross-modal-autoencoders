@@ -23,7 +23,7 @@ def setup_args():
     # save and directory options
     options.add_argument('-sd', '--save-dir', action="store", dest="save_dir", default="/Users/esthomas/Andor_Rotation/github_repo/cross-modal-autoencoders/save_dir")
     options.add_argument('--save-freq', action="store", dest="save_freq", default=20, type=int)
-    options.add_argument('--pretrained-file', action="store", default="/Users/esthomas/Andor_Rotation/github_repo/cross-modal-autoencoders/save_dir/models/0.pth")
+    options.add_argument('--pretrained-file', action="store", default="/Users/esthomas/Andor_Rotation/github_repo/cross-modal-autoencoders/save_dir/models/1.pth") #assuming this is the decoder?
 
     # training parameters
     options.add_argument('-bs', '--batch-size', action="store", dest="batch_size", default=32, type=int)

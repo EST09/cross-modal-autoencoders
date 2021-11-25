@@ -80,3 +80,47 @@ class ImageDataset(Dataset):
             return {'image_tensor': image_tensor, 'name': sample['name'], 'label': sample['label']}
         return sample
 
+
+class RNA_Dataset(Dataset):
+    def __init__(self, datadir):
+        self.datadir = datadir
+        self.rna_data, self.labels = self._load_rna_data()
+
+    def __len__(self):
+        return len(self.rna_data)
+
+    def __getitem__(self, idx):
+        rna_sample = self.rna_data[idx]
+        cluster = self.labels[idx]
+        coro1a = rna_sample[5849]
+        rpl10a = rna_sample[2555]
+        return {'tensor': torch.from_numpy(rna_sample).float(), 'coro1a': coro1a, 'rpl10a': rpl10a, 'label': coro1a/rpl10a, 'binary_label': int(cluster)}
+
+    def _load_rna_data(self):
+        data = pd.read_csv(os.path.join(self.datadir, "filtered_lognuminorm_pc_rp_7633genes_1396cellsnCD4.csv"), index_col=0)
+        data = data.transpose()
+        labels = pd.read_csv(os.path.join(self.datadir, "labels_nCD4_corrected.csv"), index_col=0)
+
+        data = labels.merge(data, left_index=True, right_index=True)
+        data = data.values
+
+        return data[:,1:], np.abs(data[:,0]-1)
+
+
+#Testing area
+datadir = "data_folder/my_data"
+
+
+
+
+
+
+def test_rna_loader():
+    dataset = RNA_Dataset(datadir="data_folder/data/nCD4_gene_exp_matrices")
+    print(len(dataset))
+    sample = dataset[0]
+    print(torch.max(sample['tensor']))
+    print(sample['tensor'].shape)
+    for k in sample.keys():
+        print(k)
+        print(sample[k])
