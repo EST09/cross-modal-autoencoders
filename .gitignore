@@ -4,3 +4,6 @@ my_save_dir/
 __pycache__/
 theis_lab_tutorial/
 cache/
+example_adata/
+example_adata_transpose/
+my_data.csv
