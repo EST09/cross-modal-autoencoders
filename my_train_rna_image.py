@@ -3,9 +3,9 @@ import torch.utils.data
 from torch import nn, optim
 from torch.autograd import Variable
 
-from dataloader import RNA_Dataset
-from dataloader import NucleiDatasetNew as NucleiDataset
-from model import FC_Autoencoder, FC_Classifier, VAE, FC_VAE, Simple_Classifier
+from my_dataloader_w_scRNA import RNA_Dataset
+from my_dataloader_w_scRNA import ImageDataset
+from my_model import FC_Autoencoder, FC_Classifier, VAE, FC_VAE, Simple_Classifier
 
 import os
 import argparse
@@ -21,9 +21,9 @@ def setup_args():
     options = argparse.ArgumentParser()
 
     # save and directory options
-    options.add_argument('-sd', '--save-dir', action="store", dest="save_dir", default="/Users/esthomas/Andor_Rotation/github_repo/cross-modal-autoencoders/save_dir")
+    options.add_argument('-sd', '--save-dir', action="store", dest="save_dir", default="/Users/esthomas/Andor_Rotation/github_repo/cross-modal-autoencoders/my_save_dir")
     options.add_argument('--save-freq', action="store", dest="save_freq", default=20, type=int)
-    options.add_argument('--pretrained-file', action="store", default="/Users/esthomas/Andor_Rotation/github_repo/cross-modal-autoencoders/save_dir/models/1.pth") #assuming this is the decoder?
+    options.add_argument('--pretrained-file', action="store", default="/Users/esthomas/Andor_Rotation/github_repo/cross-modal-autoencoders/my_save_dir/models/1.pth") #assuming this is the decoder?
 
     # training parameters
     options.add_argument('-bs', '--batch-size', action="store", dest="batch_size", default=32, type=int)
@@ -57,11 +57,13 @@ os.makedirs(args.save_dir, exist_ok=True)
 #============= TRAINING INITIALIZATION ==============
 
 # initialize autoencoder
-netRNA = FC_VAE(n_input=7633, nz=args.latent_dims)
+
+netRNA = FC_VAE(n_input=15814, nz=args.latent_dims) #used to be 7633
 
 netImage = VAE(latent_variable_size=args.latent_dims, batchnorm=True)
 netImage.load_state_dict(torch.load(args.pretrained_file))
 print("Pre-trained model loaded from %s" % args.pretrained_file)
+
 
 if args.conditional_adv: 
     netClf = FC_Classifier(nz=args.latent_dims+10)
@@ -72,6 +74,7 @@ else:
 if args.conditional:
     netCondClf = Simple_Classifier(nz=args.latent_dims)
 
+
 if args.use_gpu:
     netRNA.cuda()
     netImage.cuda()
@@ -80,19 +83,24 @@ if args.use_gpu:
         netCondClf.cuda()
 
 # load data
-genomics_dataset = RNA_Dataset(datadir="data_folder/data/nCD4_gene_exp_matrices/")
-image_dataset = NucleiDataset(datadir="data_folder/data/nuclear_crops_all_experiments", mode='test')
+genomics_dataset = RNA_Dataset(datadir="data_folder/my_data/")
+image_dataset = ImageDataset(datadir="data_folder/my_data/", mode='test')
 
 image_loader = torch.utils.data.DataLoader(image_dataset, batch_size=args.batch_size, drop_last=True, shuffle=True)
 genomics_loader = torch.utils.data.DataLoader(genomics_dataset, batch_size=args.batch_size, drop_last=True, shuffle=True)
+a = genomics_loader.dataset[0]
+r = a['tensor']
+print(r.shape, "l")
 
 # setup optimizer
 opt_netRNA = optim.Adam(list(netRNA.parameters()), lr=args.learning_rate_AE)
 opt_netClf = optim.Adam(list(netClf.parameters()), lr=args.learning_rate_D, weight_decay=args.weight_decay)
 opt_netImage = optim.Adam(list(netImage.parameters()), lr=args.learning_rate_AE)
 
+
 if args.conditional:
     opt_netCondClf = optim.Adam(list(netCondClf.parameters()), lr=args.learning_rate_AE)
+
 
 # loss criteria
 criterion_reconstruct = nn.MSELoss()
@@ -104,8 +112,10 @@ with open(os.path.join(args.save_dir, 'log.txt'), 'w') as f:
     print(netRNA, file=f)
     print(netImage, file=f)
     print(netClf, file=f)
+    
     if args.conditional:
         print(netCondClf, file=f)
+    
 
 # define helper train functions
 
@@ -140,6 +150,7 @@ def train_autoencoders(rna_inputs, image_inputs, rna_class_labels=None, image_cl
     image_recon, image_latents, image_mu, image_logvar = netImage(image_inputs)
     print(image_recon.shape, "a")
 
+    
     if args.conditional_adv:
         rna_class_labels, image_class_labels = rna_class_labels.cuda(), image_class_labels.cuda()
         rna_scores = netClf(torch.cat((rna_latents, rna_class_labels.float().view(-1,1).expand(-1,10)), dim=1))
@@ -150,7 +161,7 @@ def train_autoencoders(rna_inputs, image_inputs, rna_class_labels=None, image_cl
 
     rna_labels = torch.zeros(rna_scores.size(0),).long()
     image_labels = torch.ones(image_scores.size(0),).long()
-
+    
     if args.conditional:
         rna_class_scores = netCondClf(rna_latents)
         image_class_scores = netCondClf(image_latents)
@@ -159,7 +170,7 @@ def train_autoencoders(rna_inputs, image_inputs, rna_class_labels=None, image_cl
         rna_labels, image_labels = rna_labels.cuda(), image_labels.cuda()
         if args.conditional:
             rna_class_labels, image_class_labels = rna_class_labels.cuda(), image_class_labels.cuda()
-
+    
     # compute losses
     rna_recon_loss = criterion_reconstruct(rna_inputs, rna_recon)
     image_recon_loss = criterion_reconstruct(image_inputs, image_recon)
@@ -247,16 +258,17 @@ def generate_image(epoch):
     netImage.eval()
 
     for i in range(5):
+        #example: {'tensor': tensor([0., 1., 2.,  ..., 0., 0., 0.]), 'binary_label': '7_17_26'}
         samples = genomics_loader.dataset[np.random.randint(30)]
         rna_inputs = samples['tensor']
         print(rna_inputs.shape, "w")
         rna_inputs = Variable(rna_inputs.unsqueeze(0))
         print(rna_inputs.shape, "y")
-        samples = image_loader.dataset[np.random.randint(30)]
+        samples = image_loader.dataset[np.random.randint(10)]
         image_inputs = samples['image_tensor']
         image_inputs = Variable(image_inputs.unsqueeze(0))
         print(image_inputs.shape, "b")
-
+ 
         if torch.cuda.is_available():
             rna_inputs = rna_inputs.cuda()
             image_inputs = image_inputs.cuda()
@@ -316,6 +328,7 @@ for epoch in range(args.max_epochs):
         n_atac_correct += out['image_accuracy']
         n_atac_total += out['image_n_samples']
 
+    print(n_rna_total)
     recon_rna_loss /= n_rna_total
     clf_loss /= n_rna_total+n_atac_total
     AE_clf_loss /= n_rna_total+n_atac_total

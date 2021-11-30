@@ -3,7 +3,7 @@ import torch.nn as nn
 from torch.autograd import Variable
 
 # adapted from pytorch/examples/vae and ethanluoyc/pytorch-vae
-
+ 
 class ImageClassifier(nn.Module):
     def __init__(self, latent_variable_size, pretrained, nout=2):
         super(ImageClassifier, self).__init__()
@@ -122,7 +122,6 @@ class VAE(nn.Module):
         res = self.decode(z)
         return res, z, mu, logvar
 
-
 class FC_VAE(nn.Module):
     """Fully connected variational Autoencoder"""
     def __init__(self, n_input, nz, n_hidden=1024): 
@@ -170,7 +169,7 @@ class FC_VAE(nn.Module):
         return res, z, mu, logvar
 
     def encode(self, x):
-        print(x.shape)
+        print(x.shape, "x")
         h = self.encoder(x)
         return self.fc1(h), self.fc2(h)
 

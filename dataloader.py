@@ -121,6 +121,7 @@ class RNA_Dataset(Dataset):
         cluster = self.labels[idx]
         coro1a = rna_sample[5849]
         rpl10a = rna_sample[2555]
+        print(len(rna_sample))
         return {'tensor': torch.from_numpy(rna_sample).float(), 'coro1a': coro1a, 'rpl10a': rpl10a, 'label': coro1a/rpl10a, 'binary_label': int(cluster)}
 
     def _load_rna_data(self):
@@ -133,6 +134,9 @@ class RNA_Dataset(Dataset):
 
         return data[:,1:], np.abs(data[:,0]-1)
 
+a = RNA_Dataset(datadir="data_folder/data/nCD4_gene_exp_matrices/")
+a = torch.utils.data.DataLoader(a, batch_size=32, drop_last=True, shuffle=True)
+print(a.dataset[0]["tensor"])
 
 def print_nuclei_names():
     dataset = NucleiDatasetNew(datadir="data_folder/data/nuclear_crops_all_experiments", mode='test')

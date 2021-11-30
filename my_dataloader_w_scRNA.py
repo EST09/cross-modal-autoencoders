@@ -2,6 +2,7 @@
 # because I think it'll be a good test
 
 import torch
+import torch.utils.data
 from torch.utils.data import Dataset
 
 import numpy as np
@@ -92,14 +93,35 @@ class RNA_Dataset(Dataset):
     def __len__(self):
         return len(self.rna_data)
 
+    # needed to make each barcode a tensor later
+    def __getitem__(self, idx):
+
+        rna_sample = self.rna_data[idx]
+        barcode = self.labels[idx]
+        print(len(rna_sample))
+        return {'tensor': torch.from_numpy(rna_sample).float(), 'binary_label': barcode}
+
     def _load_rna_data(self):
         
         data = pd.read_csv(os.path.join(self.datadir, "scRNA_filtered.csv"), index_col=0)
+        print(data.shape)
         data = data.transpose()
         labels = list(data.index)
         data = data.values
         
         return data, labels
+'''
+datadir = "data_folder/my_data"
+data = pd.read_csv(os.path.join(datadir, "scRNA_filtered.csv"), index_col=0)
+data = data.transpose()
+labels = list(data.index)
+data = data.values
+print(data[1])
+'''
+
+a = RNA_Dataset(datadir="data_folder/my_data/")
+a = torch.utils.data.DataLoader(a, batch_size=32, drop_last=True, shuffle=True)
+print(a.dataset[0]["tensor"].shape)
 
 
 def test_rna_loader():
@@ -111,3 +133,4 @@ def test_rna_loader():
     for k in sample.keys():
         print(k)
         print(sample[k])
+
