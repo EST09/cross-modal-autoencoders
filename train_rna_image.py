@@ -286,8 +286,15 @@ for epoch in range(args.max_epochs):
     n_atac_correct = 0
     n_atac_total = 0
 
+    print(enumerate(image_loader), "gen")
+    
+    for idx, image_samples in enumerate(image_loader):
+        print(idx, "idx_1")
+
     for idx, (rna_samples, image_samples) in enumerate(zip(genomics_loader, image_loader)):
+        print(idx, "idx")
         rna_inputs = rna_samples['tensor']
+        
         image_inputs = image_samples['image_tensor']
         print(image_inputs.shape, "d")
 

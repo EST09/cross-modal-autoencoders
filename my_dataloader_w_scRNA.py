@@ -65,6 +65,7 @@ class ImageDataset(Dataset):
                 except Exception as e:   
                     pass
 
+        print(len(images_test))
         if self.mode == 'train':
             return images_train
         elif self.mode == 'test':
@@ -84,6 +85,12 @@ class ImageDataset(Dataset):
             return {'image_tensor': image_tensor, 'name': sample['name'], 'label': sample['label']}
         return sample
 
+a = ImageDataset(datadir="data_folder/my_data/")
+a = torch.utils.data.DataLoader(a, batch_size=32, drop_last=True, shuffle=True)
+for idx, image in enumerate(a):
+    print(idx)
+
+#print(a.dataset[0]["image_tensor"].shape)
 
 class RNA_Dataset(Dataset):
     def __init__(self, datadir):
@@ -98,13 +105,11 @@ class RNA_Dataset(Dataset):
 
         rna_sample = self.rna_data[idx]
         barcode = self.labels[idx]
-        print(len(rna_sample))
         return {'tensor': torch.from_numpy(rna_sample).float(), 'binary_label': barcode}
 
     def _load_rna_data(self):
         
         data = pd.read_csv(os.path.join(self.datadir, "scRNA_filtered.csv"), index_col=0)
-        print(data.shape)
         data = data.transpose()
         labels = list(data.index)
         data = data.values
@@ -119,10 +124,11 @@ data = data.values
 print(data[1])
 '''
 
+'''
 a = RNA_Dataset(datadir="data_folder/my_data/")
 a = torch.utils.data.DataLoader(a, batch_size=32, drop_last=True, shuffle=True)
 print(a.dataset[0]["tensor"].shape)
-
+'''
 
 def test_rna_loader():
     dataset = RNA_Dataset(datadir="data_folder/data/nCD4_gene_exp_matrices")

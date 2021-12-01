@@ -65,11 +65,11 @@ netImage.load_state_dict(torch.load(args.pretrained_file))
 print("Pre-trained model loaded from %s" % args.pretrained_file)
 
 
-if args.conditional_adv: 
+if args.conditional_adv:
     netClf = FC_Classifier(nz=args.latent_dims+10)
     assert(not args.conditional)
 else:
-    netClf = FC_Classifier(nz=args.latent_dims)
+    netClf = FC_Classifier(nz=args.latent_dims) #latent space discriminator - model is using this one 
 
 if args.conditional:
     netCondClf = Simple_Classifier(nz=args.latent_dims)
@@ -88,9 +88,7 @@ image_dataset = ImageDataset(datadir="data_folder/my_data/", mode='test')
 
 image_loader = torch.utils.data.DataLoader(image_dataset, batch_size=args.batch_size, drop_last=True, shuffle=True)
 genomics_loader = torch.utils.data.DataLoader(genomics_dataset, batch_size=args.batch_size, drop_last=True, shuffle=True)
-a = genomics_loader.dataset[0]
-r = a['tensor']
-print(r.shape, "l")
+
 
 # setup optimizer
 opt_netRNA = optim.Adam(list(netRNA.parameters()), lr=args.learning_rate_AE)
@@ -99,8 +97,7 @@ opt_netImage = optim.Adam(list(netImage.parameters()), lr=args.learning_rate_AE)
 
 
 if args.conditional:
-    opt_netCondClf = optim.Adam(list(netCondClf.parameters()), lr=args.learning_rate_AE)
-
+    opt_netCondClf = optim.Adam(list(netCondClf.parameters()), lr=args.learning_rate_AE) #this does not run
 
 # loss criteria
 criterion_reconstruct = nn.MSELoss()
@@ -261,13 +258,10 @@ def generate_image(epoch):
         #example: {'tensor': tensor([0., 1., 2.,  ..., 0., 0., 0.]), 'binary_label': '7_17_26'}
         samples = genomics_loader.dataset[np.random.randint(30)]
         rna_inputs = samples['tensor']
-        print(rna_inputs.shape, "w")
         rna_inputs = Variable(rna_inputs.unsqueeze(0))
-        print(rna_inputs.shape, "y")
         samples = image_loader.dataset[np.random.randint(10)]
         image_inputs = samples['image_tensor']
         image_inputs = Variable(image_inputs.unsqueeze(0))
-        print(image_inputs.shape, "b")
  
         if torch.cuda.is_available():
             rna_inputs = rna_inputs.cuda()
@@ -277,16 +271,17 @@ def generate_image(epoch):
         recon_inputs = netImage.decode(rna_latents)
         imageio.imwrite(os.path.join(img_dir, "epoch_%s_trans_%s.jpg" % (epoch, i)), np.uint8(recon_inputs.cpu().data.view(64,64).numpy()*255))
         recon_images, _, _, _ = netImage(image_inputs)
-        print(recon_images.shape, "c")
         imageio.imwrite(os.path.join(img_dir, "epoch_%s_recon_%s.jpg" % (epoch, i)), np.uint8(recon_images.cpu().data.view(64,64).numpy()*255))
  
 ### main training loop
 for epoch in range(args.max_epochs):
-    print(epoch)
+    print(epoch, "epoch")
+    
 
     if epoch % args.save_freq == 0:
         generate_image(epoch)
 
+    
     recon_rna_loss = 0
     recon_image_loss = 0
     clf_loss = 0
@@ -298,16 +293,27 @@ for epoch in range(args.max_epochs):
     n_atac_correct = 0
     n_atac_total = 0
 
+    print(enumerate(genomics_loader), "i")
+    for idx, rna_samples in enumerate(genomics_loader):
+        print(idx, "idx_1")
+
+    #for i in range(0, 100):
+    #    print(i, "i")
+    
+
     for idx, (rna_samples, image_samples) in enumerate(zip(genomics_loader, image_loader)):
+        print(idx, "idx")
         rna_inputs = rna_samples['tensor']
         image_inputs = image_samples['image_tensor']
-        print(image_inputs.shape, "d")
 
+        print("loop")
         if args.conditional or args.conditional_adv:
+            print("hello")
             rna_labels = rna_samples['binary_label']
             image_labels = image_samples['binary_label']
             out = train_autoencoders(rna_inputs, image_inputs, rna_labels, image_labels)
         else:
+            print("goodbye")
             out = train_autoencoders(rna_inputs, image_inputs)
 
         recon_rna_loss += out['rna_recon_loss']
@@ -328,7 +334,7 @@ for epoch in range(args.max_epochs):
         n_atac_correct += out['image_accuracy']
         n_atac_total += out['image_n_samples']
 
-    print(n_rna_total)
+    
     recon_rna_loss /= n_rna_total
     clf_loss /= n_rna_total+n_atac_total
     AE_clf_loss /= n_rna_total+n_atac_total

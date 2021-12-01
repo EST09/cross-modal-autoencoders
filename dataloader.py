@@ -1,4 +1,5 @@
 import torch
+import torch.utils.data
 from torch.utils.data import Dataset
 
 import numpy as np
@@ -84,6 +85,11 @@ class NucleiDatasetNew(Dataset):
             return {'image_tensor': image_tensor, 'name': sample['name'], 'label': sample['label'], 'binary_label': sample['binary_label']}
         return sample
 
+a = NucleiDatasetNew(datadir="data_folder/data/nuclear_crops_all_experiments/")
+a = torch.utils.data.DataLoader(a, batch_size=32, drop_last=True, shuffle=True)
+for idx, image in enumerate(a):
+    print(idx)
+
 class ATAC_Dataset(Dataset):
     def __init__(self, datadir):
         self.datadir = datadir
@@ -134,9 +140,9 @@ class RNA_Dataset(Dataset):
 
         return data[:,1:], np.abs(data[:,0]-1)
 
-a = RNA_Dataset(datadir="data_folder/data/nCD4_gene_exp_matrices/")
-a = torch.utils.data.DataLoader(a, batch_size=32, drop_last=True, shuffle=True)
-print(a.dataset[0]["tensor"])
+# a = RNA_Dataset(datadir="data_folder/data/nCD4_gene_exp_matrices/")
+# a = torch.utils.data.DataLoader(a, batch_size=32, drop_last=True, shuffle=True)
+# print(a.dataset[0]["tensor"])
 
 def print_nuclei_names():
     dataset = NucleiDatasetNew(datadir="data_folder/data/nuclear_crops_all_experiments", mode='test')
