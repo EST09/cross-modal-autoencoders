@@ -26,7 +26,7 @@ def setup_args():
     options.add_argument('--pretrained-file', action="store", default="/Users/esthomas/Andor_Rotation/github_repo/cross-modal-autoencoders/my_save_dir/models/1.pth") #assuming this is the decoder?
 
     # training parameters
-    options.add_argument('-bs', '--batch-size', action="store", dest="batch_size", default=32, type=int)
+    options.add_argument('-bs', '--batch-size', action="store", dest="batch_size", default=4, type=int)
     options.add_argument('-w', '--num-workers', action="store", dest="num_workers", default=10, type=int)
     options.add_argument('-lrAE', '--learning-rate-AE', action="store", dest="learning_rate_AE", default=1e-4, type=float)
     options.add_argument('-lrD', '--learning-rate-D', action="store", dest="learning_rate_D", default=1e-4, type=float)
@@ -292,28 +292,17 @@ for epoch in range(args.max_epochs):
     n_rna_total = 0
     n_atac_correct = 0
     n_atac_total = 0
-
-    print(enumerate(genomics_loader), "i")
-    for idx, rna_samples in enumerate(genomics_loader):
-        print(idx, "idx_1")
-
-    #for i in range(0, 100):
-    #    print(i, "i")
     
-
     for idx, (rna_samples, image_samples) in enumerate(zip(genomics_loader, image_loader)):
         print(idx, "idx")
         rna_inputs = rna_samples['tensor']
         image_inputs = image_samples['image_tensor']
 
-        print("loop")
         if args.conditional or args.conditional_adv:
-            print("hello")
             rna_labels = rna_samples['binary_label']
             image_labels = image_samples['binary_label']
             out = train_autoencoders(rna_inputs, image_inputs, rna_labels, image_labels)
         else:
-            print("goodbye")
             out = train_autoencoders(rna_inputs, image_inputs)
 
         recon_rna_loss += out['rna_recon_loss']

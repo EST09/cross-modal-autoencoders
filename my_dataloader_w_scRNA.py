@@ -65,7 +65,6 @@ class ImageDataset(Dataset):
                 except Exception as e:   
                     pass
 
-        print(len(images_test))
         if self.mode == 'train':
             return images_train
         elif self.mode == 'test':
@@ -77,7 +76,9 @@ class ImageDataset(Dataset):
         return len(self.images)
 
     def __getitem__(self, idx):
+        #print(idx, "idx")
         sample = self.images[idx]
+        #print(sample)
 
         if self.transform:
             # transform the tensor and the particular z-slice
@@ -85,10 +86,10 @@ class ImageDataset(Dataset):
             return {'image_tensor': image_tensor, 'name': sample['name'], 'label': sample['label']}
         return sample
 
-a = ImageDataset(datadir="data_folder/my_data/")
-a = torch.utils.data.DataLoader(a, batch_size=32, drop_last=True, shuffle=True)
-for idx, image in enumerate(a):
-    print(idx)
+# a = ImageDataset(datadir="data_folder/my_data/")
+# a = torch.utils.data.DataLoader(a, batch_size=32, drop_last=True, shuffle=True)
+# for idx, image in enumerate(a):
+#     print(idx)
 
 #print(a.dataset[0]["image_tensor"].shape)
 

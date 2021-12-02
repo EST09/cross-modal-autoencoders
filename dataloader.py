@@ -76,9 +76,9 @@ class NucleiDatasetNew(Dataset):
     def __len__(self):
         return len(self.images)
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx):        
         sample = self.images[idx]
-
+        
         if self.transform:
             # transform the tensor and the particular z-slice
             image_tensor = self.transform(sample)
@@ -88,7 +88,7 @@ class NucleiDatasetNew(Dataset):
 a = NucleiDatasetNew(datadir="data_folder/data/nuclear_crops_all_experiments/")
 a = torch.utils.data.DataLoader(a, batch_size=32, drop_last=True, shuffle=True)
 for idx, image in enumerate(a):
-    print(idx)
+     print(idx)
 
 class ATAC_Dataset(Dataset):
     def __init__(self, datadir):
@@ -181,5 +181,5 @@ def test_rna_loader():
         print(k)
         print(sample[k])
 
-if __name__ == "__main__":
-    test_nuclei_dataset()
+#if __name__ == "__main__":
+#    test_nuclei_dataset()
