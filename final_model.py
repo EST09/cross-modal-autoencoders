@@ -20,16 +20,16 @@ class VAE(nn.Module):
     def __init__(self, nc=1, ngf=128, ndf=128, latent_variable_size=128, imsize=64, batchnorm=False):
         super(VAE, self).__init__()
  
-        self.nc = nc
-        self.ngf = ngf
-        self.ndf = ndf
+        self.nc = nc #number_channels
+        self.ngf = ngf #number of filters in generator
+        self.ndf = ndf #number of filters in discriminator
         self.imsize = imsize
         self.latent_variable_size = latent_variable_size
         self.batchnorm = batchnorm
  
         self.encoder = nn.Sequential(
             # input is 3 x 64 x 64
-            nn.Conv2d(nc, ndf, 4, 2, 1, bias=False),
+            nn.Conv2d(nc, ndf, 4, 2, 1, bias=False), #in_channels=1, out_channels=128, kernel_size=4, stride=2, padding=1
             nn.LeakyReLU(0.2, inplace=True),
             # state size. (ndf) x 32 x 32
             nn.Conv2d(ndf, ndf * 2, 4, 2, 1, bias=False),
@@ -50,15 +50,15 @@ class VAE(nn.Module):
             # state size. (ndf*8) x 2 x 2
         )
  
-        self.fc1 = nn.Linear(ndf*8*2*2, latent_variable_size)
-        self.fc2 = nn.Linear(ndf*8*2*2, latent_variable_size)
+        self.fc1 = nn.Linear(ndf*8*2*2, latent_variable_size) #self.z-mean (4096=64*64)
+        self.fc2 = nn.Linear(ndf*8*2*2, latent_variable_size) #self.z_log_var (4096=64*64)
  
         # decoder
  
         self.decoder = nn.Sequential(
             # input is Z, going into a convolution
             # state size. (ngf*8) x 2 x 2
-            nn.ConvTranspose2d(ngf * 8, ngf * 8, 4, 2, 1, bias=False),
+            nn.ConvTranspose2d(ngf * 8, ngf * 8, 4, 2, 1, bias=False), #in_channels, out_channels, kernel_size, stride=1, padding=0, output_padding=0, groups=1
             nn.BatchNorm2d(ngf * 8),
             nn.LeakyReLU(0.2, inplace=True),
             # state size. (ngf*8) x 4 x 4
@@ -83,15 +83,16 @@ class VAE(nn.Module):
             nn.Linear(latent_variable_size, ngf*8*2*2),
             nn.ReLU(inplace=True),
             )
+
         self.bn_mean = nn.BatchNorm1d(latent_variable_size)
  
     def encode(self, x):
         h = self.encoder(x)
-        h = h.view(-1, self.ndf*8*2*2)
+        h = h.view(-1, self.ndf*8*2*2) #.view returns a new tensor with a different shape, 4096
         if self.batchnorm:
             return self.bn_mean(self.fc1(h)), self.fc2(h)
         else:
-            return self.fc1(h), self.fc2(h)
+            return self.fc1(h), self.fc2(h) #encoded z_mean, z_log_var
  
     def reparametrize(self, mu, logvar):
         std = logvar.mul(0.5).exp_()
