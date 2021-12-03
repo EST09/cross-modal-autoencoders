@@ -21,7 +21,7 @@ def setup_args():
 
     options.add_argument('--save-dir', action="store", dest="save_dir", default="save_dir")
     options.add_argument('-pt', action="store", dest="pretrained_file", default=None)
-    options.add_argument('-bs', action="store", dest="batch_size", default = 128, type = int)
+    options.add_argument('-bs', action="store", dest="batch_size", default = 800, type = int)
     options.add_argument('-ds', action="store", dest="datadir", default = "data_folder/data/nuclear_crops_all_experiments/")
  
     options.add_argument('-iter', action="store", dest="max_iter", default = 2, type = int) #800
