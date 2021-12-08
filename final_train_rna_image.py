@@ -59,7 +59,6 @@ os.makedirs(args.save_dir, exist_ok=True)
 # initialize autoencoder
 
 netRNA = FC_VAE(n_input=15814, nz=args.latent_dims) #used to be 7633
-
 netImage = VAE(latent_variable_size=args.latent_dims, batchnorm=True)
 netImage.load_state_dict(torch.load(args.pretrained_file))
 print("Pre-trained model loaded from %s" % args.pretrained_file)

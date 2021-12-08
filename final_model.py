@@ -170,7 +170,6 @@ class FC_VAE(nn.Module):
         return res, z, mu, logvar
 
     def encode(self, x):
-        print(x.shape, "x")
         h = self.encoder(x)
         return self.fc1(h), self.fc2(h)
 

@@ -34,3 +34,7 @@ python train_rna_image.py --save-dir <path/to/save/dir> --pretrained-file <path/
 ## 3. Expected output 
 
 Output is log file and PyTorch checkpoint files when code is run on gene expression and imaging data.
+
+
+NB, 
+conda activate auto_env
