@@ -3,8 +3,8 @@ from torch import nn, optim
 from torch.autograd import Variable
 from torch.utils.data import DataLoader
 
-from my_dataloader import ImageDataset
-import model as AENet
+from final_dataloader import ImageDataset
+import final_model as AENet
 
 import argparse
 import numpy as np
