@@ -38,3 +38,5 @@ Output is log file and PyTorch checkpoint files when code is run on gene express
 
 NB, 
 conda activate auto_env
+conda env export --from-history > cross_platform_env.yml
+

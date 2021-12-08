@@ -1,0 +1,16 @@
+name: auto_env
+channels:
+  - defaults
+  - mlgill
+  - bioconda
+  - conda-forge
+dependencies:
+  - numpy
+  - torchaudio
+  - pytorch
+  - torchvision
+  - pandas
+  - scikit-learn
+  - opencv
+  - scikit-image
+prefix: /Users/esthomas/opt/anaconda3/envs/auto_env

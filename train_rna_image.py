@@ -241,7 +241,7 @@ def accuracy(output, target):
     return correct
 
 def generate_image(epoch):
-    img_dir = os.path.join(args.save_dir, "images")
+    img_dir = os.path.join(args.save_dir, "images_recon")
     os.makedirs(img_dir, exist_ok=True)
     netRNA.eval()
     netImage.eval()
