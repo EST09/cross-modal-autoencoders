@@ -21,8 +21,8 @@ def setup_args():
 
     options.add_argument('--save-dir', action="store", dest="save_dir", default="my_save_dir")
     options.add_argument('-pt', action="store", dest="pretrained_file", default=None)
-    options.add_argument('-bs', action="store", dest="batch_size", default = 128, type = int)
-    options.add_argument('-ds', action="store", dest="datadir", default = "data_folder/my_data//")
+    options.add_argument('-bs', action="store", dest="batch_size", default = 128, type = int) 
+    options.add_argument('-ds', action="store", dest="datadir", default = "data_folder/my_data/")
  
     options.add_argument('-iter', action="store", dest="max_iter", default = 800, type = int) #800
     options.add_argument('-lr', action="store", dest="lr", default=1e-3, type = float)
@@ -51,31 +51,19 @@ print('Data loaded')
 
 model = AENet.VAE(latent_variable_size=args.nz, batchnorm=True)
 
-if args.conditional:
-    print("hi")
-    netCondClf = AENet.Simple_Classifier(nz=args.nz)
 
-if args.pretrained_file is not None:
-    model.load_state_dict(torch.load(args.pretrained_file))
-    print("Pre-trained model loaded")
-    sys.stdout.flush()
+
+
 
 #cross_entropy
 CE_weights = torch.FloatTensor([4.5, 0.5])
  
-if torch.cuda.is_available():
-    print('Using GPU')
-    model.cuda()
-    CE_weights = CE_weights.cuda()
-    if args.conditional:
-        netCondClf.cuda()
+
 
 CE = nn.CrossEntropyLoss(CE_weights)
  
-if args.conditional:
-    optimizer = optim.Adam(list(model.parameters())+list(netCondClf.parameters()), lr = args.lr)
-else:
-    optimizer = optim.Adam([{'params': model.parameters()}], lr = args.lr)
+
+optimizer = optim.Adam([{'params': model.parameters()}], lr = args.lr)
 
 def loss_function(recon_x, x, mu, logvar, latents):
     MSE = nn.MSELoss()
@@ -88,43 +76,39 @@ def loss_function(recon_x, x, mu, logvar, latents):
     return lloss
  
 def train(epoch):
+    
     model.train()
-    if args.conditional:
-        netCondClf.train()
 
     train_loss = 0
     total_clf_loss = 0
-
+    
     for batch_idx, samples in enumerate(train_loader):
  
         inputs = Variable(samples['image_tensor'])
-        if torch.cuda.is_available():
-            inputs = inputs.cuda()
+        
+        
+        
  
         optimizer.zero_grad()
         recon_inputs, latents, mu, logvar = model(inputs)
         loss = loss_function(recon_inputs, inputs, mu, logvar, latents)
         train_loss += loss.data.item() * inputs.size(0)
         
-        if args.conditional:
-            targets = Variable(samples['binary_label'])
-            if torch.cuda.is_available():
-                targets = targets.cuda()
-            clf_outputs = netCondClf(latents)
-            class_clf_loss = CE(clf_outputs, targets.view(-1).long())
-            loss += args.lamb2 * class_clf_loss
-            total_clf_loss += class_clf_loss.data.item() * inputs.size(0)
- 
+        
+        
+        
         loss.backward()
+        
         optimizer.step()
+        
 
     with open(os.path.join(args.save_dir, "log.txt"), 'a') as f:
         print('Epoch: {} Average loss: {:.15f} Clf loss: {:.15f} '.format(epoch, train_loss / len(train_loader.dataset), total_clf_loss / len(train_loader.dataset)), file=f)
- 
+    
+
 def test(epoch):
     model.eval()
-    if args.conditional:
-        netCondClf.eval()
+    
 
     test_loss = 0
     total_clf_loss = 0
@@ -132,21 +116,13 @@ def test(epoch):
     for i, samples in enumerate(test_loader):
  
         inputs = Variable(samples['image_tensor'])
-        if torch.cuda.is_available():
-            inputs = inputs.cuda()
+        
  
         recon_inputs, latents, mu, logvar = model(inputs)
         
         loss = loss_function(recon_inputs, inputs, mu, logvar, latents)
         test_loss += loss.data.item() * inputs.size(0)
         
-        if args.conditional:
-            targets = Variable(samples['binary_label'])
-            if torch.cuda.is_available():
-                targets = targets.cuda()
-            clf_outputs = netCondClf(latents)
-            class_clf_loss = CE(clf_outputs, targets.view(-1).long())
-            total_clf_loss += class_clf_loss.data.item() * inputs.size(0)
 
     test_loss /= len(test_loader.dataset)
     total_clf_loss /= len(test_loader.dataset)
@@ -161,8 +137,7 @@ def save(epoch):
     model_dir = os.path.join(args.save_dir, "models")
     os.makedirs(model_dir, exist_ok=True)
     torch.save(model.cpu().state_dict(), os.path.join(model_dir, str(epoch)+".pth"))
-    if torch.cuda.is_available():
-        model.cuda()
+    
  
 def generate_image(epoch):
     img_dir = os.path.join(args.save_dir, "images")
@@ -174,8 +149,7 @@ def generate_image(epoch):
         inputs = samples['image_tensor']
         inputs = Variable(inputs.view(1,1,64,64))
  
-        if torch.cuda.is_available():
-            inputs = inputs.cuda()
+        
  
         recon_inputs, _, _, _ = model(inputs)
  
@@ -186,8 +160,7 @@ def generate_image(epoch):
         inputs = samples['image_tensor']
         inputs = Variable(inputs.view(1,1,64,64))
  
-        if torch.cuda.is_available():
-            inputs = inputs.cuda()
+        
  
         recon_inputs, _, _, _ = model(inputs)
  
@@ -202,8 +175,11 @@ _ = test(0)
 
 for epoch in range(args.max_iter):
     print(epoch)
+    
     train(epoch)
+    
     _ = test(epoch)
+    
  
     if epoch % 10 == 1:
         generate_image(epoch)
