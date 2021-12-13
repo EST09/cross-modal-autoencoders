@@ -48,6 +48,8 @@ class NucleiDatasetNew(Dataset):
         del label_data
         del label_data_2
 
+        print(label_dict)
+
         # load images
         images_train = []
         images_test = []
@@ -87,8 +89,8 @@ class NucleiDatasetNew(Dataset):
 
 a = NucleiDatasetNew(datadir="data_folder/data/nuclear_crops_all_experiments/")
 a = torch.utils.data.DataLoader(a, batch_size=32, drop_last=True, shuffle=True)
-for idx, image in enumerate(a):
-     print(idx)
+# for idx, image in enumerate(a):
+#      print(idx)
 
 class ATAC_Dataset(Dataset):
     def __init__(self, datadir):
