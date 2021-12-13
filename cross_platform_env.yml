@@ -6,7 +6,6 @@ channels:
   - conda-forge
 dependencies:
   - numpy
-  - torchaudio
   - pytorch
   - torchvision
   - pandas
