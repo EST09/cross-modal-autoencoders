@@ -114,8 +114,10 @@ def train(epoch):
             class_clf_loss = CE(clf_outputs, targets.view(-1).long())
             loss += args.lamb2 * class_clf_loss
             total_clf_loss += class_clf_loss.data.item() * inputs.size(0)
- 
+
+        print(loss)
         loss.backward()
+        print("passed")
         optimizer.step()
 
     with open(os.path.join(args.save_dir, "log.txt"), 'a') as f:
