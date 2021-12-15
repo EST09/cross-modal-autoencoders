@@ -4,6 +4,7 @@ from torch.utils.data import Dataset
 
 import numpy as np
 import pandas as pd
+
 from sklearn.model_selection import train_test_split
 import cv2
 from PIL import Image
@@ -85,10 +86,6 @@ class NucleiDatasetNew(Dataset):
             return {'image_tensor': image_tensor, 'name': sample['name'], 'label': sample['label'], 'binary_label': sample['binary_label']}
         return sample
 
-a = NucleiDatasetNew(datadir="data_folder/data/nuclear_crops_all_experiments/")
-a = torch.utils.data.DataLoader(a, batch_size=32, drop_last=True, shuffle=True)
-for idx, image in enumerate(a):
-     print(idx)
 
 class ATAC_Dataset(Dataset):
     def __init__(self, datadir):

@@ -50,8 +50,6 @@ print('Data loaded')
 #VAE 
 #clf = classifier
 model = AENet.VAE(latent_variable_size=args.nz, batchnorm=True)
-if args.conditional:
-    netCondClf = AENet.Simple_Classifier(nz=args.nz)
 
 if args.pretrained_file is not None:
     model.load_state_dict(torch.load(args.pretrained_file))
@@ -60,20 +58,11 @@ if args.pretrained_file is not None:
 
 #cross_entropy
 CE_weights = torch.FloatTensor([4.5, 0.5])
- 
-if torch.cuda.is_available():
-    print('Using GPU')
-    model.cuda()
-    CE_weights = CE_weights.cuda()
-    if args.conditional:
-        netCondClf.cuda()
 
 CE = nn.CrossEntropyLoss(CE_weights)
  
-if args.conditional:
-    optimizer = optim.Adam(list(model.parameters())+list(netCondClf.parameters()), lr = args.lr)
-else:
-    optimizer = optim.Adam([{'params': model.parameters()}], lr = args.lr)
+
+optimizer = optim.Adam([{'params': model.parameters()}], lr = args.lr)
 
 def loss_function(recon_x, x, mu, logvar, latents):
     MSE = nn.MSELoss()
@@ -87,8 +76,6 @@ def loss_function(recon_x, x, mu, logvar, latents):
  
 def train(epoch):
     model.train()
-    if args.conditional:
-        netCondClf.train()
 
     train_loss = 0
     total_clf_loss = 0
@@ -96,22 +83,11 @@ def train(epoch):
     for batch_idx, samples in enumerate(train_loader):
  
         inputs = Variable(samples['image_tensor'])
-        if torch.cuda.is_available():
-            inputs = inputs.cuda()
  
         optimizer.zero_grad()
         recon_inputs, latents, mu, logvar = model(inputs)
         loss = loss_function(recon_inputs, inputs, mu, logvar, latents)
         train_loss += loss.data.item() * inputs.size(0)
-        
-        if args.conditional:
-            targets = Variable(samples['binary_label'])
-            if torch.cuda.is_available():
-                targets = targets.cuda()
-            clf_outputs = netCondClf(latents)
-            class_clf_loss = CE(clf_outputs, targets.view(-1).long())
-            loss += args.lamb2 * class_clf_loss
-            total_clf_loss += class_clf_loss.data.item() * inputs.size(0)
  
         loss.backward()
         optimizer.step()
@@ -121,8 +97,7 @@ def train(epoch):
  
 def test(epoch):
     model.eval()
-    if args.conditional:
-        netCondClf.eval()
+    
 
     test_loss = 0
     total_clf_loss = 0
@@ -130,21 +105,11 @@ def test(epoch):
     for i, samples in enumerate(test_loader):
  
         inputs = Variable(samples['image_tensor'])
-        if torch.cuda.is_available():
-            inputs = inputs.cuda()
  
         recon_inputs, latents, mu, logvar = model(inputs)
         
         loss = loss_function(recon_inputs, inputs, mu, logvar, latents)
         test_loss += loss.data.item() * inputs.size(0)
-        
-        if args.conditional:
-            targets = Variable(samples['binary_label'])
-            if torch.cuda.is_available():
-                targets = targets.cuda()
-            clf_outputs = netCondClf(latents)
-            class_clf_loss = CE(clf_outputs, targets.view(-1).long())
-            total_clf_loss += class_clf_loss.data.item() * inputs.size(0)
 
     test_loss /= len(test_loader.dataset)
     total_clf_loss /= len(test_loader.dataset)
@@ -159,8 +124,6 @@ def save(epoch):
     model_dir = os.path.join(args.save_dir, "models")
     os.makedirs(model_dir, exist_ok=True)
     torch.save(model.cpu().state_dict(), os.path.join(model_dir, str(epoch)+".pth"))
-    if torch.cuda.is_available():
-        model.cuda()
  
 def generate_image(epoch):
     img_dir = os.path.join(args.save_dir, "images")
@@ -172,9 +135,6 @@ def generate_image(epoch):
         inputs = samples['image_tensor']
         inputs = Variable(inputs.view(1,1,64,64))
  
-        if torch.cuda.is_available():
-            inputs = inputs.cuda()
- 
         recon_inputs, _, _, _ = model(inputs)
  
         imageio.imwrite(os.path.join(img_dir, "Train_epoch_%s_inputs_%s.jpg" % (epoch, i)), np.uint8(inputs.cpu().data.view(64,64).numpy()*255))
@@ -183,9 +143,6 @@ def generate_image(epoch):
         samples = test_loader.dataset[np.random.randint(30)]
         inputs = samples['image_tensor']
         inputs = Variable(inputs.view(1,1,64,64))
- 
-        if torch.cuda.is_available():
-            inputs = inputs.cuda()
  
         recon_inputs, _, _, _ = model(inputs)
  
