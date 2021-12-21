@@ -4,7 +4,7 @@ from torch.autograd import Variable
 
 import torch
 torch.cuda.is_available()
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda:0")
 print(device)
 torch.cuda.current_device()
 
@@ -54,10 +54,10 @@ class VAE(nn.Module):
             nn.BatchNorm2d(ndf * 8),
             nn.LeakyReLU(0.2, inplace=True),
             # state size. (ndf*8) x 2 x 2
-        )
+        ).to(device)
  
-        self.fc1 = nn.Linear(ndf*8*2*2, latent_variable_size) #self.z-mean (4096=64*64)
-        self.fc2 = nn.Linear(ndf*8*2*2, latent_variable_size) #self.z_log_var (4096=64*64)
+        self.fc1 = nn.Linear(ndf*8*2*2, latent_variable_size).to(device) #self.z-mean (4096=64*64)
+        self.fc2 = nn.Linear(ndf*8*2*2, latent_variable_size).to(device) #self.z_log_var (4096=64*64)
  
         # decoder
  
@@ -83,19 +83,21 @@ class VAE(nn.Module):
             nn.ConvTranspose2d(    ngf,      nc, 4, 2, 1, bias=False),
             nn.Sigmoid(),
             # state size. (nc) x 64 x 64
-        )
+        ).to(device)
  
         self.d1 = nn.Sequential(
             nn.Linear(latent_variable_size, ngf*8*2*2),
             nn.ReLU(inplace=True),
-            )
+            ).to(device)
 
-        self.bn_mean = nn.BatchNorm1d(latent_variable_size)
+        self.bn_mean = nn.BatchNorm1d(latent_variable_size).to(device)
  
     def encode(self, x):
         x = x.to(device)
         h = self.encoder(x)
+        h = h.to(device)
         h = h.view(-1, self.ndf*8*2*2) #.view returns a new tensor with a different shape, 4096
+        h=h.to(device)
         if self.batchnorm:
             return self.bn_mean(self.fc1(h)), self.fc2(h)
         else:
@@ -116,7 +118,9 @@ class VAE(nn.Module):
     def decode(self, z):
         z=z.to(device)
         h = self.d1(z)
+        h=h.to(device)
         h = h.view(-1, self.ngf*8, 2, 2)
+        h=h.to(device)
         return self.decoder(h)
  
     def get_latent_var(self, x):
@@ -124,6 +128,7 @@ class VAE(nn.Module):
         print("x_lat", x.is_cuda)
         mu, logvar = self.encode(x.view(-1, self.nc, self.imsize, self.imsize))
         z = self.reparametrize(mu, logvar)
+        z=z.to(device)
         return z
  
     def generate(self, z):
