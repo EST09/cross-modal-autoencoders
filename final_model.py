@@ -2,6 +2,12 @@ import torch
 import torch.nn as nn
 from torch.autograd import Variable
 
+import torch
+torch.cuda.is_available()
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+print(device)
+torch.cuda.current_device()
+
 # adapted from pytorch/examples/vae and ethanluoyc/pytorch-vae
  
 class ImageClassifier(nn.Module):
@@ -87,6 +93,7 @@ class VAE(nn.Module):
         self.bn_mean = nn.BatchNorm1d(latent_variable_size)
  
     def encode(self, x):
+        x = x.to(device)
         h = self.encoder(x)
         h = h.view(-1, self.ndf*8*2*2) #.view returns a new tensor with a different shape, 4096
         if self.batchnorm:
@@ -95,30 +102,44 @@ class VAE(nn.Module):
             return self.fc1(h), self.fc2(h) #encoded z_mean, z_log_var
  
     def reparametrize(self, mu, logvar):
+        print("start")
         std = logvar.mul(0.5).exp_()
-        
-        eps = torch.FloatTensor(std.size()).normal_()
-        eps = Variable(eps)
+        print("repara", torch.cuda.is_available())
+        if torch.cuda.is_available():
+            print("hello", "using_GPU")
+            eps = torch.cuda.FloatTensor(std.size()).normal_()
+        # eps = Variable(eps)
+        eps = eps.cuda()
+        print("eps", eps.is_cuda)
         return eps.mul(std).add_(mu)
  
     def decode(self, z):
+        z=z.to(device)
         h = self.d1(z)
         h = h.view(-1, self.ngf*8, 2, 2)
         return self.decoder(h)
  
     def get_latent_var(self, x):
+        x = x.to(device)
+        print("x_lat", x.is_cuda)
         mu, logvar = self.encode(x.view(-1, self.nc, self.imsize, self.imsize))
         z = self.reparametrize(mu, logvar)
         return z
  
     def generate(self, z):
+        z=z.to(device)
+        print("z", z.is_cuda)
         res = self.decode(z)
+        print("res", res.is_cuda)
         return res
  
     def forward(self, x):
+        x=x.to(device)
+        print("X", x.is_cuda)
         mu, logvar = self.encode(x.view(-1, self.nc, self.imsize, self.imsize))
         z = self.reparametrize(mu, logvar)
         res = self.decode(z)
+        print("res", res.is_cuda)
         return res, z, mu, logvar
 
 class FC_VAE(nn.Module):
@@ -165,6 +186,7 @@ class FC_VAE(nn.Module):
         mu, logvar = self.encode(x)
         z = self.reparametrize(mu, logvar)
         res = self.decode(z)
+        print("res", res.is_cuda)
         return res, z, mu, logvar
 
     def encode(self, x):
@@ -173,8 +195,10 @@ class FC_VAE(nn.Module):
 
     def reparametrize(self, mu, logvar):
         std = logvar.mul(0.5).exp_()
-        
-        eps = torch.FloatTensor(std.size()).normal_()
+        if torch.cuda.is_available():
+            eps = torch.cuda.FloatTensor(std.size()).normal_()
+        # else:
+        #     eps = torch.FloatTensor(std.size()).normal_()
         eps = Variable(eps)
         return eps.mul(std).add_(mu)
     
