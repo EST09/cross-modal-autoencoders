@@ -40,12 +40,14 @@ class ImageDataset(Dataset):
         images_test=[]
         images_train=[]
 
+        dir_len = len(os.listdir(os.path.join(self.datadir, "single_cell_images")))
+
         for f, i in zip(os.listdir(os.path.join(self.datadir, "single_cell_images")), range(0, len(os.listdir(os.path.join(self.datadir, "single_cell_images"))))):
             basename = os.path.splitext(f)[0]
             fname = os.path.join(os.path.join(self.datadir, "single_cell_images"), f)
             
             # this will need to be revised to a proper test-train split - very biased  
-            if i<11: 
+            if i< dir_len*0.2:
                 try:
                     #lavel is just the barcode coordinate e.g. 02_22 etc
                     images_test.append({'name': basename, 'label': basename.split("_",1)[1], 'image_tensor': np.float32(io.imread(fname))})
