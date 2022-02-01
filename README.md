@@ -1,3 +1,15 @@
+# My documentation
+
+## 1. Follow their master script including their analysis techniques 
+
+## 2. Analysis steps
+
+* reconstruction loss curve (sum of rna-seq and image losses)
+* discriminative loss curve for rna seq and image translation model
+* evaluation of robustness of choice of architecture for cross modal autoencoder integrating rna-seq and chromatin imaging - evaluation via a ROC on performance of classifiers trained to distinguish two subpopulations - evaluate on translated images
+* LDA analysis of different architectures on image or rna seq embeddings
+* differential gene expression analysis on predicted gene expression obtained from different architecture choices
+
 # Multi-Domain Translation between Single-Cell Imaging and Sequencing Data using Autoencoders
 
 This is the accompanying code for the paper, "Multi-Domain Translation between Single-Cell Imaging and Sequencing Data using Autoencoders" ([bioRxiv](https://www.biorxiv.org/content/10.1101/2019.12.13.875922v1.full))
