@@ -24,7 +24,7 @@ def setup_args():
     options.add_argument('-bs', action="store", dest="batch_size", default = 128, type = int)
     options.add_argument('-ds', action="store", dest="datadir", default = "data_folder/data/nuclear_crops_all_experiments/")
  
-    options.add_argument('-iter', action="store", dest="max_iter", default = 2, type = int) #800
+    options.add_argument('-iter', action="store", dest="max_iter", default = 800, type = int) #800
     options.add_argument('-lr', action="store", dest="lr", default=1e-3, type = float)
     options.add_argument('-nz', action="store", dest="nz", default=128, type = int)
     options.add_argument('-lamb', action="store", dest="lamb", default=0.0000001, type = float)
@@ -35,7 +35,7 @@ def setup_args():
  
 args = setup_args()
 os.makedirs(args.save_dir, exist_ok=True)
-with open(os.path.join(args.save_dir, "log.txt"), 'w') as f:
+with open(os.path.join(args.save_dir, "train_ae_log.txt"), 'w') as f:
     print(args, file=f)
 
 # retrieve dataloader
@@ -116,7 +116,7 @@ def train(epoch):
         loss.backward()
         optimizer.step()
 
-    with open(os.path.join(args.save_dir, "log.txt"), 'a') as f:
+    with open(os.path.join(args.save_dir, "train_ae_log.txt"), 'a') as f:
         print('Epoch: {} Average loss: {:.15f} Clf loss: {:.15f} '.format(epoch, train_loss / len(train_loader.dataset), total_clf_loss / len(train_loader.dataset)), file=f)
  
 def test(epoch):
@@ -149,7 +149,7 @@ def test(epoch):
     test_loss /= len(test_loader.dataset)
     total_clf_loss /= len(test_loader.dataset)
 
-    with open(os.path.join(args.save_dir, "log.txt"), 'a') as f:
+    with open(os.path.join(args.save_dir, "train_ae_log.txt"), 'a') as f:
         print('Test set loss: {:.15f} Test clf loss: {:.15f}'.format(test_loss, total_clf_loss), file=f)
     
     return test_loss
@@ -203,6 +203,6 @@ for epoch in range(args.max_iter):
     train(epoch)
     _ = test(epoch)
  
-    if epoch % 10 == 1:
+    if epoch % 100 == 1:
         generate_image(epoch)
         save(epoch)
