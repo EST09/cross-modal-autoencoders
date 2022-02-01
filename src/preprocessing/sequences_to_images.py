@@ -5,13 +5,13 @@ from skimage.filters import threshold_otsu
 from skimage.segmentation import clear_border
 from skimage.measure import label, regionprops_table
 from skimage.morphology import closing, square, remove_small_objects
-import napari
+# import napari
 
 Image.MAX_IMAGE_PIXELS = 600000000
 
-image_path = "/Users/esthomas/Andor_Rotation/github_repo/cross-modal-autoencoders/data_folder/my_data/GBM-image.csv"
-sequence_path = "/Users/esthomas/Andor_Rotation/github_repo/cross-modal-autoencoders/data_folder/my_data/GSM4567140_PJ069.matrix.txt"
-tif_path = "/Users/esthomas/Andor_Rotation/github_repo/cross-modal-autoencoders/data_folder/my_data/GBM-BF-c1.tif"
+image_path = "/Users/esthomas/Mirror/Andor_Rotation/github_repo/cross-modal-autoencoders/data_folder/my_data/GBM-image.csv"
+sequence_path = "/Users/esthomas/Mirror/Andor_Rotation/github_repo/cross-modal-autoencoders/data_folder/my_data/GSM4567140_PJ069.matrix.txt"
+tif_path = "/Users/esthomas/Mirror/Andor_Rotation/github_repo/cross-modal-autoencoders/data_folder/my_data/GBM-BF-c1.tif"
 
 class Matched:
 
@@ -46,7 +46,7 @@ class Matched:
 samples = Matched(image_path, sequence_path)
 centroids = samples.get_centroids_of_matched()
 # number of cells you would like
-centroids.iloc[:100,:].to_csv("roi_with_index.csv") #this path is hardcoded in imagej scripts will need to change
+centroids.iloc[:,:].to_csv("roi_with_index.csv") #this path is hardcoded in imagej scripts will need to change
 
 ## Open imagej ##
 

@@ -23,7 +23,7 @@ lineseparator = "\n";
 cellseparator = ",\t";
 
 // copies the whole RT to an array of lines
-lines=split(File.openAsString("/Users/esthomas/Andor_Rotation/github_repo/cross-modal-autoencoders/roi_with_index.csv"), lineseparator);
+lines=split(File.openAsString("/Users/esthomas/Mirror/Andor_Rotation/github_repo/cross-modal-autoencoders/roi_with_index.csv"), lineseparator);
 
 numROIs = roiManager("count");
 
